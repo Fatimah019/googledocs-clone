@@ -23,7 +23,7 @@ function TextEditor() {
 
   const [snapshot] = useDocumentOnce(
       db.collection('googledocUsers')
-      .doc(session.user.email)
+      .doc(session?.user?.email)
       .collection('docs')
       .doc(id)
   )
@@ -31,7 +31,7 @@ function TextEditor() {
       setEditorState(editorState)
 
       db.collection('googledocUsers')
-      .doc(session.user.email)
+      .doc(session?.user?.email)
       .collection('docs')
       .doc(id)
       .set({
