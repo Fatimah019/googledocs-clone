@@ -5,67 +5,74 @@ import Icon from "@material-tailwind/react/Icon";
 import Image from "next/image";
 import { getSession, useSession } from "next-auth/client";
 import Login from "./components/Login";
-import Modal from "@material-tailwind/react/Modal"
-import ModalBody from "@material-tailwind/react/ModalBody"
-import ModalFooter from "@material-tailwind/react/ModalFooter"
-import {db} from "../firebase"
+import Modal from "@material-tailwind/react/Modal";
+import ModalBody from "@material-tailwind/react/ModalBody";
+import ModalFooter from "@material-tailwind/react/ModalFooter";
+import { db } from "../firebase";
 import firebase from "firebase";
 import { useState } from "react";
-import { useCollectionOnce } from "react-firebase-hooks/firestore"
+import { useCollectionOnce } from "react-firebase-hooks/firestore";
 import DocumentRow from "./components/DocumentRow";
 
 export default function Home() {
   const [session] = useSession();
   if (!session) return <Login />;
 
-  const [showModal, setShowModal] = useState(false)
-  const [input, setInput] = useState("")
-  const [snapshot] = useCollectionOnce(db.collection('googledocUsers').doc(session.user.email).collection('docs').orderBy('timestamp', 'desc'))
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [input, setInput] = useState("");
+  const [snapshot] = useCollectionOnce(
+    db
+      .collection("googledocUsers")
+      .doc(session.user.email)
+      .collection("docs")
+      .orderBy("timestamp", "desc")
+  );
 
-  const createDocument=()=>{
-    if (!input) return 
+  const createDocument = async () => {
+    if (!input) return;
 
-    db.collection('googledocUsers')
-    .doc(session.user.email)
-    .collection('docs')
-    .add({
-      fileName: input,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    setInput(input)
-    setShowModal(false)
+    await db
+      .collection("googledocUsers")
+      .doc(session.user.email)
+      .collection("docs")
+      .add({
+        fileName: input,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    setInput(input);
+    setShowModal(false);
+    // await setLoading(true);
+    window.location.reload(true);
+    return snapshot;
     // window.location.reload(false)
-  }
+  };
 
   const modal = (
-    <Modal
-      size="sm"
-      active={showModal}
-      toggler={()=> setShowModal(false)}
-    >
+    <Modal size="sm" active={showModal} toggler={() => setShowModal(false)}>
       <ModalBody>
-        <input 
+        <input
           type="text"
           placeholder="Enter name of document..."
           value={input}
-          onChange={(e)=> setInput(e.target.value)}
-          onKeyDown={(e)=> e.key === "Enter" && createDocument()}
-          style={{outline: "none", width: "100%"}}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && createDocument()}
+          style={{ outline: "none", width: "100%" }}
         />
       </ModalBody>
       <ModalFooter>
         <Button
           color="blue"
           buttonType="link"
-          onClick={(e)=>setShowModal(false)}
+          onClick={(e) => setShowModal(false)}
           ripple="dark"
         >
-        Cancel
+          Cancel
         </Button>
-        <Button onClick={()=> createDocument()}>Create</Button>
+        <Button onClick={() => createDocument()}>Create</Button>
       </ModalFooter>
     </Modal>
-  )
+  );
 
   return (
     <div className="">
@@ -76,7 +83,7 @@ export default function Home() {
       <Header />
       {modal}
       <section className="bg-[#F8F9FA] pb-18 px-10">
-        <div className="max-w-3xl mx-auto" onClick={()=> setShowModal(true)}>
+        <div className="max-w-3xl mx-auto" onClick={() => setShowModal(true)}>
           <div className="flex items-center justify-between py-6">
             <h2 className="text-gray-700 text-lg">Start a new document</h2>
             <Button
@@ -106,27 +113,35 @@ export default function Home() {
             <Icon name="folder" size="3xl" color="gray" />
           </div>
 
-          {
-            snapshot?.docs?.map((doc)=>(
-              <DocumentRow
-                key={doc?.id}
-                id={doc?.id}
-                fileName={doc?.data()?.fileName}
-                date={doc?.data()?.timestamp}
-              />
-            ))
-          }
+          {loading
+            ? "Loading...."
+            : snapshot?.docs?.map((doc) => (
+                <DocumentRow
+                  key={doc?.id}
+                  id={doc?.id}
+                  fileName={doc?.data()?.fileName}
+                  date={doc?.data()?.timestamp}
+                />
+              ))}
+          {/* {snapshot?.docs?.map((doc) => (
+            <DocumentRow
+              key={doc?.id}
+              id={doc?.id}
+              fileName={doc?.data()?.fileName}
+              date={doc?.data()?.timestamp}
+            />
+          ))} */}
         </div>
       </section>
     </div>
   );
 }
 
-export async function getServerSideProps(context){
-  const session = await getSession(context)
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
   return {
     props: {
-      session
-    }
-  }
+      session,
+    },
+  };
 }

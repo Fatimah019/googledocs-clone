@@ -3,9 +3,9 @@ import Button from "@material-tailwind/react/Button";
 import { useSession, getSession, signOut } from "next-auth/client";
 
 function Header() {
-  const [session] = useSession()
+  const [session] = useSession();
   return (
-    <header className="flex items-center shadow-md bg-white px-4 p-2 sticky top-0">
+    <header className="flex items-center shadow-md bg-white px-4 p-2 sticky top-0 z-50">
       <Button
         color="gray"
         buttonType="outline"
