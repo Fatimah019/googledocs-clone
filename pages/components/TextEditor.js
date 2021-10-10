@@ -28,6 +28,7 @@ function TextEditor() {
       .collection("docs")
       .doc(id)
   );
+
   const onEditorStateChange = (editorState) => {
     setEditorState(editorState);
 
@@ -49,10 +50,10 @@ function TextEditor() {
     if (snapshot?.data()?.editorState)
       setEditorState(
         EditorState.createWithContent(
-          convertFromRaw(snapshot?.data().editorState)
+          convertFromRaw(snapshot?.data()?.editorState)
         )
       );
-  }, []);
+  }, [snapshot]);
 
   return (
     <div className="bg-[#F8F9FA] min-h-screen pb-16">
